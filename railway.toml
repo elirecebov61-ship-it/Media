@@ -1,0 +1,2 @@
+[deploy]
+startCommand = "python media_bot.py"
