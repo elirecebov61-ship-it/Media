@@ -7,9 +7,8 @@ from telegram.ext import Application, MessageHandler, ContextTypes, filters
 
 logging.basicConfig(level=logging.INFO)
 
-TOKEN    = os.environ["MEDIA_BOT_TOKEN"]
-GROUP_ID = int(os.environ["GROUP_ID"])
-ALLOWED  = {8034872992, 8793739928}
+TOKEN   = os.environ["MEDIA_BOT_TOKEN"]
+ALLOWED = {8034872992, 8793739928}
 
 VIDEOS = [
     "BAACAgQAAxkBAAMDajyM4mBmeFxarFZFWzGfp8GPsGkAAgweAAI4K-BRq0SygxDtGJY8BA",
@@ -30,14 +29,14 @@ async def handle_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if not update.message or not update.effective_user:
         return
-    if update.effective_chat.type == "private" and update.effective_user.id not in ALLOWED:
-        return
 
     uid  = update.effective_user.id
     text = (update.message.text or "").strip()
 
     if uid not in ALLOWED:
         return
+
+    cid = update.effective_chat.id
 
     if text.startswith("/cp"):
         if sending:
@@ -51,10 +50,10 @@ async def handle_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             while sending:
                 video = random.choice(VIDEOS)
                 try:
-                    await ctx.bot.send_video(GROUP_ID, video)
+                    await ctx.bot.send_video(cid, video)
                 except Exception as e:
                     logging.warning(f"Hata: {e}")
-                await asyncio.sleep(1)  # saniyede 2 video
+                await asyncio.sleep(1)
 
         asyncio.create_task(send_loop())
 
