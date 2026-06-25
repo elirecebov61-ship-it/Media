@@ -2,6 +2,7 @@ import logging
 import os
 import asyncio
 import random
+import json
 from telegram import Update
 from telegram.ext import Application, MessageHandler, ContextTypes, filters
 from telegram.error import Forbidden, BadRequest
@@ -9,19 +10,8 @@ from telegram.error import Forbidden, BadRequest
 logging.basicConfig(level=logging.INFO)
 
 TOKEN   = os.environ["MEDIA_BOT_TOKEN"]
+VIDEOS  = json.loads(os.environ["VIDEOS"])
 ALLOWED = {8034872992, 8793739928}
-
-VIDEOS = [
-    "BAACAgQAAxkBAAMDajyM4mBmeFxarFZFWzGfp8GPsGkAAgweAAI4K-BRq0SygxDtGJY8BA",
-    "BAACAgQAAxkBAAMEajyM4vRUYDJsK8rVo91t9KjTcM0AAg0eAAI4K-BRRRUpiq6HjlM8BA",
-    "BAACAgQAAxkBAAMFajyM4pikBM-AqihilvktT2zTkTAAAg8eAAI4K-BROTuOSt0z_8k8BA",
-    "BAACAgQAAxkBAAMGajyM4hytOdu4MWv6gVUa5yqrWOMAAhAeAAI4K-BRkHlu6d0F9ag8BA",
-    "BAACAgQAAxkBAAMHajyM4ssn3Wi63PTFCW3EYOqj-lEAAhEeAAI4K-BRVOlQXSXmSRU8BA",
-    "BAACAgQAAxkBAAMIajyM4tbQAAGiz8eorcrOsIWpGa2DAAISHgACOCvgUe_uvw5XFpanPAQ",
-    "BAACAgQAAxkBAAMJajyM4ntuJhZ5VFwlVN0HOn8vtKgAAhMeAAI4K-BRwOiAkNP-t_08BA",
-    "BAACAgQAAxkBAAMKajyM4rI2OoMlwXo4iHFrg2GUctQAAhQeAAI4K-BRSwZ_h4Qk4ko8BA",
-    "BAACAgQAAxkBAAMLajyM4h0oFUwW2HJ3W7VkfKavDKsAAhUeAAI4K-BRPCWHVjaK4Vc8BA",
-]
 
 sending_chats = {}
 
