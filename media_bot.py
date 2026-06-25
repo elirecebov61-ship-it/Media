@@ -4,6 +4,7 @@ import asyncio
 import random
 from telegram import Update
 from telegram.ext import Application, MessageHandler, ContextTypes, filters
+from telegram.error import Forbidden, BadRequest
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,11 +23,38 @@ VIDEOS = [
     "BAACAgQAAxkBAAMLajyM4h0oFUwW2HJ3W7VkfKavDKsAAhUeAAI4K-BRPCWHVjaK4Vc8BA",
 ]
 
-sending = False
+PHOTOS = [
+    "AgACAgQAAxkBAAMnaj1JlpXm9WRV0MJnpxnOzboMRTwAAgEPaxv_jdlRvAvT9WovZvIBAAMCAAN5AAM8BA",
+    "AgACAgQAAxkBAAMoaj1Jlu9mDhiUWPWYDxlCQ3G1WwADsg1rGzgr4FFlTIrm1fR5IgEAAwIAA3gAAzwE",
+    "AgACAgQAAxkBAAMpaj1JlnWVqHOdU3Tnm5uAdEUC4b8AArMNaxs4K-BRhiofFTGyNaMBAAMCAAN4AAM8BA",
+]
+
+# Bütün media — video + foto
+ALL_MEDIA = [("video", v) for v in VIDEOS] + [("photo", p) for p in PHOTOS]
+
+sending_chats = {}
+
+async def send_loop(ctx, cid):
+    while sending_chats.get(cid):
+        media_type, file_id = random.choice(ALL_MEDIA)
+        try:
+            if media_type == "video":
+                await ctx.bot.send_video(cid, file_id)
+            else:
+                await ctx.bot.send_photo(cid, file_id)
+        except Forbidden:
+            logging.warning(f"Forbidden: {cid} — dayandırıldı")
+            sending_chats[cid] = False
+            break
+        except BadRequest as e:
+            logging.warning(f"BadRequest: {e} — dayandırıldı")
+            sending_chats[cid] = False
+            break
+        except Exception as e:
+            logging.warning(f"Xəta: {e}")
+        await asyncio.sleep(1)
 
 async def handle_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    global sending
-
     if not update.message or not update.effective_user:
         return
 
@@ -38,27 +66,23 @@ async def handle_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     cid = update.effective_chat.id
 
-    if text.startswith("/cp"):
-        if sending:
+    try:
+        member = await ctx.bot.get_chat_member(cid, ctx.bot.id)
+        if member.status not in ("member", "administrator"):
+            return
+    except Exception:
+        return
+
+    if text == ".send cp":
+        if sending_chats.get(cid):
             await update.message.reply_text("⚠️ Zaten çalışıyor!")
             return
-        sending = True
+        sending_chats[cid] = True
         await update.message.reply_text("✅ Medya gönderimi başladı!")
-
-        async def send_loop():
-            global sending
-            while sending:
-                video = random.choice(VIDEOS)
-                try:
-                    await ctx.bot.send_video(cid, video)
-                except Exception as e:
-                    logging.warning(f"Hata: {e}")
-                await asyncio.sleep(1)
-
-        asyncio.create_task(send_loop())
+        asyncio.create_task(send_loop(ctx, cid))
 
     elif text.startswith("/dur"):
-        sending = False
+        sending_chats[cid] = False
         await update.message.reply_text("🛑 Medya gönderimi durduruldu!")
 
 def main():
