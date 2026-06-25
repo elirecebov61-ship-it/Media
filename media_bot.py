@@ -54,7 +54,7 @@ async def handle_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                     await ctx.bot.send_video(GROUP_ID, video)
                 except Exception as e:
                     logging.warning(f"Hata: {e}")
-                await asyncio.sleep(0.5)  # saniyede 2 video
+                await asyncio.sleep(1)  # saniyede 2 video
 
         asyncio.create_task(send_loop())
 
