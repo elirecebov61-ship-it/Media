@@ -23,25 +23,13 @@ VIDEOS = [
     "BAACAgQAAxkBAAMLajyM4h0oFUwW2HJ3W7VkfKavDKsAAhUeAAI4K-BRPCWHVjaK4Vc8BA",
 ]
 
-PHOTOS = [
-    "AgACAgQAAxkBAAMnaj1JlpXm9WRV0MJnpxnOzboMRTwAAgEPaxv_jdlRvAvT9WovZvIBAAMCAAN5AAM8BA",
-    "AgACAgQAAxkBAAMoaj1Jlu9mDhiUWPWYDxlCQ3G1WwADsg1rGzgr4FFlTIrm1fR5IgEAAwIAA3gAAzwE",
-    "AgACAgQAAxkBAAMpaj1JlnWVqHOdU3Tnm5uAdEUC4b8AArMNaxs4K-BRhiofFTGyNaMBAAMCAAN4AAM8BA",
-]
-
-# Bütün media — video + foto
-ALL_MEDIA = [("video", v) for v in VIDEOS] + [("photo", p) for p in PHOTOS]
-
 sending_chats = {}
 
 async def send_loop(ctx, cid):
     while sending_chats.get(cid):
-        media_type, file_id = random.choice(ALL_MEDIA)
+        video = random.choice(VIDEOS)
         try:
-            if media_type == "video":
-                await ctx.bot.send_video(cid, file_id)
-            else:
-                await ctx.bot.send_photo(cid, file_id)
+            await ctx.bot.send_video(cid, video)
         except Forbidden:
             logging.warning(f"Forbidden: {cid} — dayandırıldı")
             sending_chats[cid] = False
@@ -75,15 +63,12 @@ async def handle_message(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if text == ".send cp":
         if sending_chats.get(cid):
-            await update.message.reply_text("⚠️ Zaten çalışıyor!")
             return
         sending_chats[cid] = True
-        await update.message.reply_text("✅ Medya gönderimi başladı!")
         asyncio.create_task(send_loop(ctx, cid))
 
     elif text.startswith("/dur"):
         sending_chats[cid] = False
-        await update.message.reply_text("🛑 Medya gönderimi durduruldu!")
 
 def main():
     app = Application.builder().token(TOKEN).build()
